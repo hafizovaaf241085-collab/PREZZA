@@ -1,0 +1,876 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Новая система мотивации отдела продаж</title>
+  <style>
+    :root{
+      --bg:#0f1720;
+      --bg-2:#14202c;
+      --card:#182634;
+      --card-2:#1d2e40;
+      --text:#ecf3f9;
+      --muted:#9fb2c5;
+      --accent:#d7a14a;
+      --accent-2:#7fb3ff;
+      --success:#43c59e;
+      --danger:#d46a6a;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 18px 40px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing:border-box; }
+    html, body {
+      margin:0;
+      padding:0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(215,161,74,.12), transparent 30%),
+        linear-gradient(135deg, #0e151d 0%, #152332 55%, #12202d 100%);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    .deck {
+      width:100vw;
+      height:100vh;
+      position:relative;
+    }
+
+    .slide {
+      width:100vw;
+      height:100vh;
+      padding:48px 64px 42px;
+      display:none;
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(8,12,16,.42), rgba(8,12,16,.58)),
+        linear-gradient(135deg, rgba(215,161,74,.06), transparent 28%),
+        linear-gradient(120deg, rgba(127,179,255,.08), transparent 34%);
+    }
+
+    .slide.active { display:block; }
+
+    .topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:24px;
+    }
+
+    .brand {
+      font-size:14px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .page {
+      font-size:13px;
+      color:var(--muted);
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.03);
+    }
+
+    h1, h2 {
+      margin:0 0 14px 0;
+      font-weight:700;
+      line-height:1.1;
+    }
+
+    h1 { font-size:42px; max-width:980px; }
+    h2 { font-size:34px; }
+
+    .subtitle {
+      font-size:18px;
+      color:var(--muted);
+      max-width:860px;
+      line-height:1.5;
+      margin-bottom:28px;
+    }
+
+    .grid-2 {
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:26px;
+      align-items:stretch;
+    }
+
+    .grid-3 {
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:18px;
+    }
+
+    .card {
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:24px 24px 20px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .card h3 {
+      margin:0 0 12px;
+      font-size:20px;
+      color:var(--text);
+    }
+
+    .card p, .card li, .table-wrap {
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+    }
+
+    ul.clean {
+      margin:0;
+      padding-left:20px;
+    }
+    ul.clean li { margin:8px 0; }
+
+    .metric {
+      padding:20px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(215,161,74,.08), rgba(255,255,255,.02));
+    }
+    .metric .label {
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .metric .value {
+      font-size:34px;
+      font-weight:700;
+      color:var(--text);
+    }
+    .metric .delta {
+      margin-top:8px;
+      font-size:15px;
+      color:var(--success);
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+      overflow:hidden;
+      border-radius:18px;
+    }
+    th, td {
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+    }
+    th {
+      color:#dfe9f2;
+      background:rgba(255,255,255,.04);
+      font-weight:600;
+    }
+    tr:last-child td { border-bottom:none; }
+    td.num { text-align:right; font-variant-numeric: tabular-nums; }
+    .pos { color:var(--success); font-weight:600; }
+    .neg { color:var(--danger); font-weight:600; }
+
+    .bars { display:flex; flex-direction:column; gap:14px; }
+    .bar-row { display:grid; grid-template-columns: 220px 1fr 90px; gap:14px; align-items:center; }
+    .bar-label { color:var(--text); font-size:15px; }
+    .bar-track {
+      height:14px;
+      background:rgba(255,255,255,.08);
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.04);
+    }
+    .bar-fill {
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--accent), #f0c27b);
+    }
+    .bar-fill.blue { background:linear-gradient(90deg, var(--accent-2), #bfd8ff); }
+    .bar-fill.green { background:linear-gradient(90deg, var(--success), #8ae4c5); }
+    .bar-val { color:var(--muted); text-align:right; font-variant-numeric: tabular-nums; }
+
+    .timeline {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:18px;
+      margin-top:8px;
+    }
+    .step {
+      position:relative;
+      padding:22px 18px 18px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      min-height:150px;
+    }
+    .step::after{
+      content:"";
+      position:absolute;
+      top:50%;
+      right:-18px;
+      width:18px;
+      height:2px;
+      background:rgba(255,255,255,.16);
+    }
+    .step:last-child::after{ display:none; }
+    .step .n {
+      width:34px; height:34px; border-radius:50%;
+      display:grid; place-items:center;
+      background:linear-gradient(180deg, var(--accent), #b47c22);
+      color:#0d1318; font-weight:700; margin-bottom:14px;
+    }
+    .step h4 { margin:0 0 8px; font-size:18px; }
+    .step p { margin:0; color:var(--muted); font-size:15px; }
+
+    .formula {
+      font-size:28px;
+      font-weight:700;
+      letter-spacing:.01em;
+      padding:24px 28px;
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(127,179,255,.10), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .footer-note {
+      position:absolute;
+      left:64px;
+      right:64px;
+      bottom:24px;
+      display:flex;
+      justify-content:space-between;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .kbd {
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      margin-left:6px;
+      color:#dfe9f2;
+    }
+
+    .cover {
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:28px;
+      align-items:end;
+      height:calc(100vh - 140px);
+    }
+
+    .cover-panel {
+      align-self:stretch;
+      border-radius:28px;
+      border:1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+        radial-gradient(circle at top right, rgba(215,161,74,.18), transparent 34%);
+      padding:32px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+
+    .cover-stats {
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:14px;
+    }
+
+    .cover-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:18px;
+    }
+
+    .decision-box {
+      margin-top:12px;
+      border-radius:22px;
+      padding:24px;
+      border:1px solid rgba(67,197,158,.24);
+      background:linear-gradient(180deg, rgba(67,197,158,.10), rgba(255,255,255,.02));
+    }
+    .decision-box h3 { margin:0 0 10px; }
+    .decision-box p { margin:0 0 12px; color:var(--muted); }
+    .decision-box ul { margin:0; padding-left:20px; }
+
+    .nav {
+      position:fixed;
+      right:24px;
+      bottom:20px;
+      display:flex;
+      gap:10px;
+      z-index:1000;
+    }
+    .nav button {
+      appearance:none;
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      cursor:pointer;
+      border:1px solid var(--line);
+      font-weight:600;
+    }
+    .nav button:hover { background:rgba(255,255,255,.12); }
+
+    @media (max-width: 1100px) {
+      .slide { padding:32px 28px 28px; overflow:auto; }
+      .grid-2, .cover { grid-template-columns:1fr; }
+      .grid-3, .timeline { grid-template-columns:1fr; }
+      .bar-row { grid-template-columns: 1fr; }
+      .footer-note { position:static; margin-top:18px; }
+    }
+
+    @media print {
+      body { overflow:visible; }
+      .slide { display:block !important; position:relative; page-break-after:always; height:auto; min-height:100vh; }
+      .nav { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+
+    <section class="slide active">
+      <div class="topbar">
+        <div class="brand">CFO Presentation / Sales Incentive Redesign</div>
+        <div class="page">1 / 8</div>
+      </div>
+
+      <div class="cover">
+        <div>
+          <div class="cover-badge">Строгий финансовый стиль • для топ-менеджмента</div>
+          <h1>Новая система мотивации отдела продаж</h1>
+          <div class="subtitle">
+            Переход от мотивации за оборот к мотивации за валовую прибыль и прирост финансового результата.
+          </div>
+
+          <div class="formula">Доход менеджера = Оклад + Бонус за прирост GP × коэффициенты качества</div>
+
+          <div class="grid-3">
+            <div class="metric">
+              <div class="label">Фокус системы</div>
+              <div class="value">GP</div>
+              <div class="delta">Валовая прибыль вместо оборота</div>
+            </div>
+            <div class="metric">
+              <div class="label">Цель компании</div>
+              <div class="value">Маржа ↑</div>
+              <div class="delta">Рост доходности продаж</div>
+            </div>
+            <div class="metric">
+              <div class="label">Эффект сотрудника</div>
+              <div class="value">Доход ↑</div>
+              <div class="delta">Только при росте прибыли</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-panel">
+          <h3 style="font-size:24px; margin:0 0 14px;">Логика защиты</h3>
+          <ul class="clean">
+            <li>Текущая система стимулирует объем, а не прибыль.</li>
+            <li>Новая модель платит только за прирост финансового результата.</li>
+            <li>Рост дохода менеджера не ухудшает экономику компании.</li>
+            <li>Система прозрачна, прогнозируема и масштабируема.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Новая система мотивации отдела продаж</div>
+        <div>Навигация: <span class="kbd">←</span><span class="kbd">→</span></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Контекст и проблематика</div>
+        <div class="page">2 / 8</div>
+      </div>
+
+      <h2>Почему текущая модель не устраивает компанию</h2>
+      <div class="subtitle">
+        При действующей логике менеджер выигрывает от роста выручки, даже если маржа падает. Компания получает оборот, но не получает сопоставимого роста прибыли.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Ключевые управленческие проблемы</h3>
+          <ul class="clean">
+            <li>Доход менеджера зависит от оборота, а не от валовой прибыли.</li>
+            <li>Частые скидки размывают маржу и не снижают личный доход менеджера.</li>
+            <li>Внутри системы отсутствует защита минимальной доходности сделки.</li>
+            <li>Компания субсидирует рост объема продаж за счет собственной прибыли.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Причинно-следственная цепочка</h3>
+          <div class="bars">
+            <div class="bar-row">
+              <div class="bar-label">Фокус на выручке</div>
+              <div class="bar-track"><div class="bar-fill" style="width:92%"></div></div>
+              <div class="bar-val">92%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Частота скидок</div>
+              <div class="bar-track"><div class="bar-fill blue" style="width:78%"></div></div>
+              <div class="bar-val">78%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Контроль маржи</div>
+              <div class="bar-track"><div class="bar-fill" style="width:28%"></div></div>
+              <div class="bar-val">28%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Управляемость прибыли</div>
+              <div class="bar-track"><div class="bar-fill green" style="width:34%"></div></div>
+              <div class="bar-val">34%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Проблема: стимулируется оборот, а не прибыль</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Сравнение систем</div>
+        <div class="page">3 / 8</div>
+      </div>
+
+      <h2>Текущая и новая логика мотивации</h2>
+      <div class="subtitle">
+        Изменение строится не на увеличении выплат как таковых, а на изменении базы расчета: бонус выплачивается только из прироста GP и роста качества продаж.
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Параметр</th>
+                <th>Текущая система</th>
+                <th>Новая система</th>
+                <th>Управленческий эффект</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>База начисления</td>
+                <td>Оборот</td>
+                <td>Прирост GP</td>
+                <td class="pos">Рост прибыли становится выгоден</td>
+              </tr>
+              <tr>
+                <td>Скидки</td>
+                <td>Почти не наказываются</td>
+                <td>Снижают коэффициент маржи</td>
+                <td class="pos">Дисциплина цены</td>
+              </tr>
+              <tr>
+                <td>Маржа сделки</td>
+                <td>Не влияет на доход</td>
+                <td>Прямо влияет на доход</td>
+                <td class="pos">Защита доходности</td>
+              </tr>
+              <tr>
+                <td>Экономика компании</td>
+                <td class="neg">Может ухудшаться</td>
+                <td class="pos">Должна улучшаться</td>
+                <td class="pos">Положительный эффект на прибыль</td>
+              </tr>
+              <tr>
+                <td>Мотивация менеджера</td>
+                <td>Продать больше</td>
+                <td>Продать выгоднее и больше</td>
+                <td class="pos">Баланс интересов</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Смена базы начисления — главный элемент реформы</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Архитектура решения</div>
+        <div class="page">4 / 8</div>
+      </div>
+
+      <h2>Как устроена новая система</h2>
+      <div class="subtitle">
+        Модель сохраняет понятность для менеджера и одновременно защищает финансовый результат компании.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Формула дохода</h3>
+          <div class="formula" style="font-size:24px;">
+            Доход = Оклад + (Прирост GP × % бонуса × Кмаржи × Кплана) + спец.бонусы
+          </div>
+          <ul class="clean">
+            <li><b>Оклад</b> — сохраняет стабильность и снижает сопротивление изменениям.</li>
+            <li><b>Прирост GP</b> — делает систему финансово безопасной.</li>
+            <li><b>Коэффициент маржи</b> — ограничивает демпинг.</li>
+            <li><b>Коэффициент плана</b> — сохраняет фокус на росте объема.</li>
+          </ul>
+        </div>
+
+        <div class="grid-3">
+          <div class="metric">
+            <div class="label">Оклад</div>
+            <div class="value">50 000</div>
+            <div class="delta">Стабильность</div>
+          </div>
+          <div class="metric">
+            <div class="label">% от прироста GP</div>
+            <div class="value">12%</div>
+            <div class="delta">Платим только из прироста</div>
+          </div>
+          <div class="metric">
+            <div class="label">Порог маржи</div>
+            <div class="value">≥ целевой</div>
+            <div class="delta">Нет бонуса ниже порога</div>
+          </div>
+          <div class="metric">
+            <div class="label">Коэф. плана</div>
+            <div class="value">0.8–1.3</div>
+            <div class="delta">Зависит от выполнения</div>
+          </div>
+          <div class="metric">
+            <div class="label">Новые клиенты</div>
+            <div class="value">бонус</div>
+            <div class="delta">Только за качественный вход</div>
+          </div>
+          <div class="metric">
+            <div class="label">Результат</div>
+            <div class="value">win-win</div>
+            <div class="delta">Доход сотрудника и компании</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Простая логика для менеджера, контролируемая логика для CFO</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Экономика</div>
+        <div class="page">5 / 8</div>
+      </div>
+
+      <h2>Финансовый эффект новой мотивации</h2>
+      <div class="subtitle">
+        Ниже — модельный сценарий с положительным эффектом и для сотрудника, и для компании. Значения соответствуют скорректированной логике калькулятора.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Сравнение по 1 менеджеру</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Показатель</th>
+                <th class="num">Значение</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Рост дохода менеджера</td>
+                <td class="num pos">+33 424 ₽</td>
+              </tr>
+              <tr>
+                <td>Эффект по прибыли компании</td>
+                <td class="num pos">+75 165 ₽</td>
+              </tr>
+              <tr>
+                <td>Прирост GP</td>
+                <td class="num">+124 000 ₽</td>
+              </tr>
+              <tr>
+                <td>Дополнительный бонус менеджеру</td>
+                <td class="num">48 835 ₽</td>
+              </tr>
+              <tr>
+                <td>Остаток прироста в компании</td>
+                <td class="num pos">+75 165 ₽</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Эффект по команде</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Показатель</th>
+                <th class="num">Значение</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Количество менеджеров</td>
+                <td class="num">8</td>
+              </tr>
+              <tr>
+                <td>Совокупный эффект по прибыли</td>
+                <td class="num pos">+601 319 ₽</td>
+              </tr>
+              <tr>
+                <td>Совокупный рост дохода команды</td>
+                <td class="num">+267 392 ₽</td>
+              </tr>
+              <tr>
+                <td>Отношение эффекта компании к росту ФОТ</td>
+                <td class="num pos">2.25x</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Менеджер получает больше только когда компания зарабатывает еще больше</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Поведенческий эффект</div>
+        <div class="page">6 / 8</div>
+      </div>
+
+      <h2>Что изменится в поведении отдела продаж</h2>
+      <div class="subtitle">
+        Система меняет не только способ расчета премии, но и ежедневные решения менеджеров: отношение к скидкам, к структуре сделок и к качеству клиентской базы.
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Сейчас</th>
+              <th>После внедрения</th>
+              <th>Эффект для бизнеса</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Продажи ради объема</td>
+              <td>Продажи ради прибыли</td>
+              <td class="pos">Рост GP на сделку</td>
+            </tr>
+            <tr>
+              <td>Скидка — инструмент выполнения плана</td>
+              <td>Скидка — исключение, а не правило</td>
+              <td class="pos">Защита маржи</td>
+            </tr>
+            <tr>
+              <td>Маржа не видна в личном доходе</td>
+              <td>Маржа прямо влияет на бонус</td>
+              <td class="pos">Финансовая дисциплина</td>
+            </tr>
+            <tr>
+              <td>Фокус на любой сделке</td>
+              <td>Фокус на качественной сделке</td>
+              <td class="pos">Снижение токсичного оборота</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer-note">
+        <div>Новая система управляет поведением, а не только выплатой</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Риски и внедрение</div>
+        <div class="page">7 / 8</div>
+      </div>
+
+      <h2>Риски управляемы, внедрение поэтапное</h2>
+      <div class="subtitle">
+        Изменение системы мотивации затрагивает привычное поведение сотрудников, поэтому ключевой принцип внедрения — пилот, прозрачный расчет и управляемая коммуникация.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Основные риски и меры</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Риск</th>
+                <th>Мера управления</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Сопротивление менеджеров</td>
+                <td>Обучение, калькулятор дохода, пилот</td>
+              </tr>
+              <tr>
+                <td>Ошибки в расчетах на старте</td>
+                <td>Тестовый период и двойная проверка</td>
+              </tr>
+              <tr>
+                <td>Снижение активности в переходный период</td>
+                <td>Комбинированный KPI по плану и GP</td>
+              </tr>
+              <tr>
+                <td>Споры по марже/исключениям</td>
+                <td>Четкий регламент и утвержденные пороги</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>План внедрения</h3>
+          <div class="timeline">
+            <div class="step">
+              <div class="n">1</div>
+              <h4>Подготовка</h4>
+              <p>2 недели. Финализация правил, порогов, регламента и расчетных шаблонов.</p>
+            </div>
+            <div class="step">
+              <div class="n">2</div>
+              <h4>Пилот</h4>
+              <p>2 месяца. Тест на ограниченной группе, контроль GP и качества сделок.</p>
+            </div>
+            <div class="step">
+              <div class="n">3</div>
+              <h4>Корректировка</h4>
+              <p>2 недели. Уточнение коэффициентов и устранение спорных зон.</p>
+            </div>
+            <div class="step">
+              <div class="n">4</div>
+              <h4>Запуск</h4>
+              <p>1 месяц. Полное внедрение и ежемесячный мониторинг эффекта.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Рекомендуемый формат: запуск через пилот, а не одномоментно на всех</div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="topbar">
+        <div class="brand">Решение</div>
+        <div class="page">8 / 8</div>
+      </div>
+
+      <h2>Предлагаемое управленческое решение</h2>
+      <div class="subtitle">
+        Новая система мотивации финансово оправдана, управленчески логична и создает положительный результат для обеих сторон: менеджера и компании.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Почему систему стоит утвердить</h3>
+          <ul class="clean">
+            <li>Устраняется конфликт интересов между менеджером и компанией.</li>
+            <li>Рост дохода менеджера обеспечивается только при реальном росте прибыли.</li>
+            <li>Система проста в объяснении и прозрачна в расчете.</li>
+            <li>Есть положительный пилотный финансовый сценарий.</li>
+          </ul>
+        </div>
+
+        <div class="decision-box">
+          <h3>Предлагается к утверждению</h3>
+          <p>Запустить новую систему мотивации с пилотным этапом и последующей корректировкой по фактическому эффекту.</p>
+          <ul>
+            <li>Утвердить принципы расчета и пороги маржи.</li>
+            <li>Утвердить пилот на 2 месяца.</li>
+            <li>Фиксировать эффект по GP, ФОТ и прибыли компании.</li>
+            <li>По итогам пилота принять решение о полном запуске.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <div>Рекомендация: утвердить пилот и перейти к настройке на реальных данных</div>
+        <div></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="nav">
+    <button id="prevBtn">← Назад</button>
+    <button id="nextBtn">Вперёд →</button>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let current = 0;
+
+    function showSlide(index){
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => showSlide(current - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => showSlide(current + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') showSlide(current + 1);
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') showSlide(current - 1);
+      if (e.key === 'Home') showSlide(0);
+      if (e.key === 'End') showSlide(slides.length - 1);
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
+'''
+path = "/mnt/data/cfo_motivation_presentation.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+print(path)
